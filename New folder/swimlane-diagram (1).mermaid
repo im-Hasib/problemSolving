@@ -1,0 +1,48 @@
+
+sequenceDiagram
+  participant U as User/Device
+  participant SE as Secure Element
+  participant NT as NFC Terminal
+  participant M as Merchant System
+  participant P as Payment Processor
+  participant N as Payment Network
+  participant IB as Issuing Bank
+
+  Note over U, IB: Setup Phase (Before Transaction)
+  U ->> SE: Add card to Apple Wallet
+  SE ->> IB: Send encrypted card details
+  IB ->> SE: Issue Device Account Number (token)
+  SE ->> SE: Store token in Secure Element
+
+  Note over U, IB: Transaction Phase
+  NT ->> NT: Activate NFC field
+  U ->> U: Double-click side button
+  U ->> U: Authenticate (Face ID/Touch ID)
+  U ->> NT: Hold device near terminal
+  NT ->> SE: Payment request with amount & merchant info
+  SE ->> SE: Generate one-time cryptogram using shared secret
+  SE ->> NT: Send tokenized data & cryptogram
+  NT ->> M: Forward payment data
+  M ->> P: Send transaction for processing
+  P ->> N: Route transaction
+  N ->> IB: Forward to issuing bank
+  IB ->> IB: Decrypt token to identify actual card
+  IB ->> IB: Generate expected cryptogram using shared secret
+  IB ->> IB: Compare received vs. expected cryptogram
+  IB ->> IB: Verify funds and check for fraud
+  IB ->> N: Send approval/decline
+  N ->> P: Forward response
+  P ->> M: Relay authorization
+  M ->> NT: Display result
+  NT ->> U: Show approval & confirmation
+  U ->> U: Receive haptic feedback
+  
+  Note over U, IB: Completion Phase
+  M ->> U: Provide receipt
+  Note over U, IB: Settlement Process (End of Day)
+  M ->> P: Submit batch of transactions
+  P ->> N: Forward batch for settlement
+  N ->> IB: Request funds for transactions
+  IB ->> N: Transfer funds (minus interchange fees)
+  N ->> P: Forward funds (minus network fees)
+  P ->> M: Deposit funds to merchant account (minus processing fees)
